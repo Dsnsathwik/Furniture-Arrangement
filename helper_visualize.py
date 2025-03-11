@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-# Also, global variables:
+#global variables
 margin = 0.2
 table_offset = 2
 desk_offset = 0.3
@@ -20,25 +20,17 @@ furniture_dims = {
 
 def visualize_layout(sample, name, save_path='stage1_visuals/'):
     """
-    Visualizes the room layout:
-      - Draws the room boundaries.
-      - Draws the door and window as colored rectangles on the proper walls.
-      - Draws furniture items (bed, dresser, nightstand, table) as labeled rectangles.
-      
-    This version is adapted for Stage 1, where only one window exists.
-    It uses 'window1_pos' if the stage indicator is 1.
+    Visualizes the room layout
     """
     room_length = sample['room_length']
     room_width = sample['room_width']
     fig, ax = plt.subplots(figsize=(8, 8))
     
-    # Draw room boundaries.
     room_rect = patches.Rectangle((0, 0), room_length, room_width, fill=False, edgecolor='black', linewidth=2)
     ax.add_patch(room_rect)
     
-    thickness = 0.1  # thickness for door/window depiction
+    thickness = 0.1
     
-    # Draw door.
     if sample['door_exist'] == 1:
         door_wall = sample['door_wall']
         door_pos = sample['door_pos']
@@ -52,10 +44,8 @@ def visualize_layout(sample, name, save_path='stage1_visuals/'):
             door_rect = patches.Rectangle((door_pos - 0.8/2, -thickness), 0.8, thickness, color='brown', alpha=0.7)
         ax.add_patch(door_rect)
     
-    # Draw window.
     if sample['window_exist'] == 1:
         window_wall = sample['window_wall']
-        # For Stage 1, use window1_pos instead of window_pos.
         if sample.get('stage', 2) == 1:
             window_pos = sample.get('window1_pos', room_length/2)
         else:
@@ -70,7 +60,6 @@ def visualize_layout(sample, name, save_path='stage1_visuals/'):
             window_rect = patches.Rectangle((window_pos - 1.0/2, -thickness), 1.0, thickness, color='blue', alpha=0.7)
         ax.add_patch(window_rect)
     
-    # Helper to draw furniture rectangles.
     def draw_furniture(center, furniture, color='green'):
         length, width = furniture_dims[furniture]
         x, y = center
@@ -79,7 +68,6 @@ def visualize_layout(sample, name, save_path='stage1_visuals/'):
         ax.add_patch(rect)
         ax.text(x, y, furniture, color=color, ha='center', va='center', fontsize=8)
     
-    # Draw furniture.
     draw_furniture((sample['bed_x'], sample['bed_y']), 'bed', 'green')
     draw_furniture((sample['dresser_x'], sample['dresser_y']), 'dresser', 'purple')
     draw_furniture((sample['nightstand_x'], sample['nightstand_y']), 'nightstand', 'orange')
@@ -102,21 +90,17 @@ def visualize_layout(sample, name, save_path='stage1_visuals/'):
 # -------------------------------
 def visualize_layout_stage2(sample, name, save_path='stage2_visuals/'):
     """
-    Visualizes the Stage 2 room layout:
-      - Door (brown), two windows (blue), pillar (grey),
-      - Furniture: bed (green), dresser (purple), nightstand (orange), table (red), desk (magenta).
+    Visualizes the Stage 2 room layout
     """
     room_length = sample['room_length']
     room_width  = sample['room_width']
     fig, ax = plt.subplots(figsize=(8,8))
     
-    # Draw room boundary
     room_rect = patches.Rectangle((0,0), room_length, room_width, fill=False, edgecolor='black', linewidth=2)
     ax.add_patch(room_rect)
     
     thickness = 0.1
     
-    # Draw door
     if sample['door_exist'] == 1:
         door_wall = sample['door_wall']
         door_pos = sample['door_pos']
@@ -130,7 +114,6 @@ def visualize_layout_stage2(sample, name, save_path='stage2_visuals/'):
             door_rect = patches.Rectangle((door_pos - 0.8/2, -thickness), 0.8, thickness, color='brown', alpha=0.7)
         ax.add_patch(door_rect)
     
-    # Draw windows using a helper function
     def draw_window(center, wall):
         if wall in ['top','bottom']:
             w = 1.0; h = thickness
@@ -140,7 +123,6 @@ def visualize_layout_stage2(sample, name, save_path='stage2_visuals/'):
         rect = patches.Rectangle(bottom_left, w, h, color='blue', alpha=0.7)
         ax.add_patch(rect)
     
-    # Window 1
     if sample['window1_wall_top']:
         w1_center = (room_length/2, room_width - margin)
         w1_wall = 'top'
@@ -155,7 +137,6 @@ def visualize_layout_stage2(sample, name, save_path='stage2_visuals/'):
         w1_wall = 'right'
     draw_window(w1_center, w1_wall)
     
-    # Window 2
     if sample['window2_wall_top']:
         w2_center = (room_length/2, room_width - margin)
         w2_wall = 'top'
@@ -170,14 +151,12 @@ def visualize_layout_stage2(sample, name, save_path='stage2_visuals/'):
         w2_wall = 'right'
     draw_window(w2_center, w2_wall)
     
-    # Draw pillar
     pillar_center = (sample['pillar_x'], sample['pillar_y'])
     p_w, p_h = pillar_dims
     p_bl = (pillar_center[0]-p_w/2, pillar_center[1]-p_h/2)
     pillar_rect = patches.Rectangle(p_bl, p_w, p_h, color='grey', alpha=0.8)
     ax.add_patch(pillar_rect)
     
-    # Furniture drawing helper
     dims = furniture_dims.copy()
     def draw_furniture(center, furniture, color):
         length, width = dims[furniture]

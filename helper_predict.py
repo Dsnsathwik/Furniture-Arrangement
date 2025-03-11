@@ -21,12 +21,11 @@ def predict_optimal_placements(obstacles_dict, stage, door_wall, window_wall, wi
 
 
     # -------------------------------
-    # Load saved scalers and model (from training)
+    # Load saved scalers and model
     # -------------------------------
     scaler_X = joblib.load("scaler_X.joblib")
     scaler_y = joblib.load("scaler_y.joblib")
 
-    # The training code used these feature names:
     input_features = [
         # "stage",
         "room_length", "room_width",
@@ -47,41 +46,31 @@ def predict_optimal_placements(obstacles_dict, stage, door_wall, window_wall, wi
         "table_x", "table_y",
         "desk_x", "desk_y"
     ]
-    input_dim = len(input_features)  # should be 26
-    output_dim = len(output_features)  # 10
+    input_dim = len(input_features)
+    output_dim = len(output_features)
 
     model = MLP(input_dim, output_dim)
     model.load_state_dict(torch.load("best_model.pth", map_location=torch.device('cpu')))
     model.eval()
 
-    # Convert to DataFrame and then to NumPy vector in the correct order.
     input_df = pd.DataFrame([obstacles_dict])
     # Ensure the order matches the training list.
     ordered_inputs = input_df[input_features].values
 
-    # -------------------------------
-    # Scale and Predict
-    # -------------------------------
-    # Scale the input using saved scaler.
     X_input_scaled = scaler_X.transform(ordered_inputs)
     x_tensor = torch.tensor(X_input_scaled, dtype=torch.float32)
     with torch.no_grad():
         pred_scaled = model(x_tensor).numpy()
     pred = scaler_y.inverse_transform(pred_scaled)[0]
 
-    # Build a dictionary for predicted outputs.
     pred_outputs = dict(zip(output_features, pred))
 
-    # Merge the training_input with predicted outputs to get a full sample for visualization.
     sample_full = obstacles_dict.copy()
     sample_full.update(pred_outputs)
-    # For visualization, we may want to include the categorical keys.
-    # For example, add door_wall and window_wall:
     sample_full["door_wall"] = door_wall
     if stage == 1:
-        sample_full["window_wall"] = window_wall  # from Stage 1 logic
+        sample_full["window_wall"] = window_wall
     else:
-        # For Stage 2, we use the unobstructed window as the representative window.
         sample_full["window_wall"] = window1_wall if blocked_window_choice=="Window 2" else window2_wall
 
 
